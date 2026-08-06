@@ -127,14 +127,14 @@ export default function Home() {
             variants={itemVariants}
             className="text-4xl sm:text-6xl font-extrabold tracking-tight bg-gradient-to-r from-[#D4AF37] via-[#F4E19C] to-[#D4AF37] bg-clip-text text-transparent"
           >
-            KAPADYA INTERNATIONAL
+            KAPADYA 
           </motion.h1>
  
           <motion.p
             variants={itemVariants}
             className="mt-2 text-xs sm:text-sm tracking-[6px] text-[#D4AF37]/70 uppercase"
           >
-            By Action
+           International  By Action
           </motion.p>
  
           {/* Subtitle */}
