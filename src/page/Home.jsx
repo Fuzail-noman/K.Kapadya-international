@@ -7,17 +7,20 @@ import {
   HeadphonesIcon,
   BadgeCheck,
 } from "lucide-react";
-import kapadyaLogo from "../assets/logo9.png";
- 
+import { Link } from "react-router";
+
 import Footer1 from "../Footer/footer1.jsx";
-import { useNavigate } from "react-router";
-
-import { useAuth } from "../Context/AuthContext.jsx";
 import Carousel from "../Navbar/CAROUSEL.jsx";
-// import Extra from "./Extra.jsx";
-import Extra1 from "./Extra1.jsx";
+// import Extra1 from "./Extra1.jsx";
+import { PRODUCTS, ProductCard } from "./Collection.jsx";
+import Navbar from "../Navbar/navbar.jsx";
+import Footer2 from "../Footer/footer.jsx";
 
- 
+// NOTE: `features` yahan sirf icon-based feature cards ke liye hai
+// (neeche "Feature cards" section mein use hota hai).
+// Product data ke liye "./Collection.jsx" se PRODUCTS use karo — usay yahan
+// dobara define/overwrite mat karo, warna feature.icon undefined ho jayega
+// aur "Element type is invalid" crash aayega.
 const features = [
   {
     icon: Sparkles,
@@ -50,7 +53,7 @@ const features = [
     desc: "All confirmed orders are final and are not eligible for replacement.",
   },
 ];
- 
+
 const containerVariants = {
   hidden: {},
   visible: {
@@ -60,7 +63,7 @@ const containerVariants = {
     },
   },
 };
- 
+
 const itemVariants = {
   hidden: { opacity: 0, y: 30 },
   visible: {
@@ -69,111 +72,83 @@ const itemVariants = {
     transition: { duration: 0.6, ease: "easeOut" },
   },
 };
- 
+
 export default function Home() {
-  const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
- 
-  // ⚠️ Yahan pehle useEffect tha jo load hote hi /home ya /signin
-  // par redirect kar deta tha — isi wajah se ye page kabhi dikhta hi nahi tha.
-  // Wo hata diya gaya hai taake KapadyaHero hamesha "/" par sab se pehle dikhe.
- 
-  // "Shop Collection" button smart hai: login hai to seedha protected page (/about),
-  // warna pehle /signin par le jayega.
-  const handleShopClick = () => {
-    navigate(isAuthenticated ? "/about" : "/signin");
-  };
- 
-  const handleRegisterClick = () => {
-    navigate("/signin");
-  };
- 
+  // Homepage par sirf pehle 4 products dikhayenge, poori collection
+  // "/collection" par jaake dekhi ja sakti hai.
+  const featuredProducts = PRODUCTS.slice(0, 4);
+
   return (
     <>
-      <section className="relative bg-[#0B0B0B] overflow-hidden px-6 py-20 sm:py-28">
+      <Navbar />
+      <section className="relative bg-[#0B0B0B] overflow-hidden px-6 py-14 sm:py-20">
         {/* Ambient glow background */}
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute -top-40 left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-[#D4AF37]/10 blur-[120px]" />
         </div>
- 
+
+        {/* Welcome greeting */}
+        <motion.div
+          initial={{ opacity: 0, y: -16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="relative z-10 text-center mb-12"
+        >
+          <h1 className="font-serif text-4xl sm:text-6xl font-bold tracking-wide bg-gradient-to-r from-[#D4AF37] via-[#F4E19C] to-[#D4AF37] bg-clip-text text-transparent">
+            Kapadya
+          </h1>
+
+          <p className="mt-2 text-sm sm:text-base tracking-[6px] text-[#D4AF37]/70 uppercase">
+            International by
+          </p>
+          <p className="mt-2 text-sm sm:text-base tracking-[6px] text-[#D4AF37]/70 uppercase">
+            Action
+          </p>
+
+          <div className="w-16 h-[2px] mx-auto mt-5 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent" />
+        </motion.div>
+
+        <div className="relative z-10">
+          <Carousel />
+        </div>
+
+        {/* Product showcase — right after the carousel */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
-          animate="visible"
-          className="relative z-10 max-w-4xl mx-auto text-center"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+          className="relative z-10 mt-16 max-w-6xl mx-auto"
         >
-          {/* Logo with floating animation */}
-          <motion.div
-            variants={itemVariants}
-            animate={{ y: [0, -10, 0] }}
-            transition={{
-              y: {
-                duration: 4,
-                repeat: Infinity,
-                ease: "easeInOut",
-              },
-            }}
-            className="flex justify-center mb-6"
-          >
-            <img
-              src={kapadyaLogo}
-              alt="Kapadya International Logo"
-              className="w-28 h-28 sm:w-36 sm:h-36 object-contain drop-shadow-[0_0_25px_rgba(212,175,55,0.35)]"
-            />
-          </motion.div>
- 
-          {/* Brand name */}
-          <motion.h1
-            variants={itemVariants}
-            className="text-4xl sm:text-6xl font-extrabold tracking-tight bg-gradient-to-r from-[#D4AF37] via-[#F4E19C] to-[#D4AF37] bg-clip-text text-transparent"
-          >
-            KAPADYA 
-          </motion.h1>
- 
-          <motion.p
-            variants={itemVariants}
-            className="mt-2 text-xs sm:text-sm tracking-[6px] text-[#D4AF37]/70 uppercase"
-          >
-           International  By Action
-          </motion.p>
- 
-          {/* Subtitle */}
-          <motion.p
-            variants={itemVariants}
-            className="mt-6 text-base sm:text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed"
-          >
-            K. Kapadya International offers premium Shalwar Kameez, elegant
-            Waistcoats, and luxurious Shalwani, crafted with precision from
-            high-quality wash &amp; wear fabrics.
-          </motion.p>
- 
-          {/* Buttons */}
-          <motion.div
-            variants={itemVariants}
-            className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
-          >
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={handleShopClick}
-              className="flex items-center gap-2 px-8 py-3 rounded-full bg-[#D4AF37] text-black font-semibold shadow-lg shadow-[#D4AF37]/20 hover:bg-white transition-colors"
-            >
-              Shop Collection
-              <span className="text-lg">→</span>
-            </motion.button>
- 
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={handleRegisterClick}
-              className="flex items-center gap-2 px-8 py-3 rounded-full bg-[#d7cfb7] text-black font-semibold shadow-lg shadow-[#D4AF37]/20 hover:bg-[#a78a2b] transition-colors"
-            >
-              Register
-            </motion.button>
-          </motion.div>
+          <div className="text-center mb-10">
+            <span className="text-[#D4AF37] text-xs tracking-[0.3em]">
+              HANDPICKED FOR YOU
+            </span>
+            <h2 className="font-serif text-3xl sm:text-4xl text-[#f3ede0] mt-3">
+              Featured Pieces
+            </h2>
+            <div className="w-16 h-[2px] mx-auto mt-3 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent" />
+          </div>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+            {featuredProducts.map((p, i) => (
+              <ProductCard key={p.id} product={p} index={i} />
+            ))}
+          </div>
+
+          <div className="text-center mt-10">
+            <Link to="/collection">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.97 }}
+                className="px-8 py-3 rounded-full border border-[#D4AF37] text-[#D4AF37] font-semibold hover:bg-[#D4AF37] hover:text-black transition-colors"
+              >
+                View Full Collection →
+              </motion.button>
+            </Link>
+          </div>
         </motion.div>
-        <br /><br />
- <Carousel/>
+
         {/* Feature cards */}
         <motion.div
           variants={containerVariants}
@@ -199,7 +174,7 @@ export default function Home() {
                 >
                   <Icon className="w-6 h-6 text-[#D4AF37]" />
                 </motion.div>
- 
+
                 <h3 className="text-xl font-bold text-white mb-2">
                   {feature.title}
                 </h3>
@@ -211,8 +186,8 @@ export default function Home() {
           })}
         </motion.div>
       </section>
-      <Extra1 />
-      <Footer1 />
+      {/* <Extra1 /> */}
+      <Footer2 />
     </>
   );
 }

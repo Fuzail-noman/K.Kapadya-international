@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router";
 import { AuthProvider } from "./Context/AuthContext.jsx";
+import { CurrencyProvider } from "./Context/CurrencyContext.jsx";
 import RouteLoader from "./Navbar/RouteLoader.jsx";
 import Home from "./page/Home.jsx";
 import SignIn from "./form/Signin.jsx";
@@ -8,54 +9,48 @@ import CollectionPage from "./page/Collection.jsx";
 import ProductPage from "./page/ProductPage.jsx";
 import CartPage from "./page/Card.jsx";
 import CheckoutPage from "./page/Proceed.jsx";
- 
+import OfferPage from "./page/Offer.jsx";
+
 function App() {
-  const user = localStorage.getItem("user");
- 
   return (
     <AuthProvider>
-      <RouteLoader>
-        <Routes>
-          {/* Agar user login hai to collection par bhej do */}
-          <Route
-            path="/"
-            element={user ? <Navigate to="/collection" replace /> : <Home />}
-          />
- 
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/checkout" element={<CheckoutPage />} />
-          <Route
-            path="/collection"
-            element={
-              <ProtectedRoute>
-                <CollectionPage />
-              </ProtectedRoute>
-            }
-          />
- 
-          <Route
-            path="/product/:id"
-            element={
-              <ProtectedRoute>
-                <ProductPage />
-              </ProtectedRoute>
-            }
-          />
- 
-          <Route
-            path="/cart"
-            element={
-              <ProtectedRoute>
-                <CartPage />
-              </ProtectedRoute>
-            }
-          />
- 
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </RouteLoader>
+      <CurrencyProvider>
+        <RouteLoader>
+          <Routes>
+            {/* Sabse pehle Collection page hi khulega — bina login ke bhi */}
+            <Route path="/" element={<Home/>} />
+
+            {/* Home ab /home pe move ho gaya (Navbar ka logo isi pe link karta hai) */}
+            <Route path="/Collection" element={<CollectionPage />} />
+
+            <Route path="/signin" element={<SignIn />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
+
+            {/* /collection bhi public — browsing ke liye login zaroori nahi */}
+            <Route path="/collection" element={<CollectionPage />} />
+
+            <Route path="/offer" element={<OfferPage />} />
+
+            {/* Product detail bhi public — sirf "Add to cart" pe login maanga jayega
+                (ProductPage.jsx mein already yeh logic hai: !isAuthenticated -> /signin) */}
+            <Route path="/product/:id" element={<ProductPage />} />
+
+            {/* Cart abhi bhi protected — checkout se pehle login zaroori */}
+            <Route
+              path="/cart"
+              element={
+                <ProtectedRoute>
+                  <CartPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </RouteLoader>
+      </CurrencyProvider>
     </AuthProvider>
   );
 }
- 
+
 export default App;

@@ -35,9 +35,9 @@ export default function Footer2() {
   ];
 
   const quickLinks = [
-   
+   { label: "Home", href: "/" },
     { label: "Collections", href: "/collection" },
-    { label: "Offer", href: "#" },
+    { label: "Offer", href: "/offer" },
     
   ];
 

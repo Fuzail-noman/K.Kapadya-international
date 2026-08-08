@@ -51,7 +51,7 @@ export default function Navbar() {
   };
 
   const navItems = [
-
+ { name: "HOME", path: "/" },
     { name: "COLLECTION", path: "/collection" },
     { name: "OFFER", path: "/offer" },
   ];

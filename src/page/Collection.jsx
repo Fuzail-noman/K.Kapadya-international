@@ -7,11 +7,12 @@ import { formatPrice } from "../utils/currency.js";
 import Footer2 from "../Footer/footer.jsx";
 
 
-// Product data — imported by CollectionPage.jsx (ProductPage.jsx also imports this)
+// Product data — imported by CollectionPage.jsx, ProductPage.jsx, and Offer.jsx
 // Prices are stored in PKR (base currency); they're converted + displayed in
 // each user's local currency at render time via formatPrice().
 // NOTE: `category` values used by the filter dropdown are:
 //   "waistcoat" | "shalwar-kameez" | "shalwar-kameez-waistcoat"
+// `featuredOffer: true` -> shown on the /offer page.
 export const PRODUCTS = [
   {
     id: "sana-purple",
@@ -23,6 +24,7 @@ export const PRODUCTS = [
     category: "shalwar-kameez",
     gradient: "linear-gradient(150deg,#8f7fc7 0%,#6d5aa8 45%,#463a6e 100%)",
     sizes: ["S", "M", "L", "XL"],
+    featuredOffer: true,
   },
   {
     id: "binsaeed-green-pink",
@@ -34,6 +36,7 @@ export const PRODUCTS = [
     category: "shalwar-kameez",
     gradient: "linear-gradient(150deg,#e06b9c 0%,#c94f7f 40%,#4f9c6b 100%)",
     sizes: ["S", "M", "L", "XL"],
+    featuredOffer: true,
   },
   {
     id: "sana-green-blue",
@@ -56,6 +59,7 @@ export const PRODUCTS = [
     category: "shalwar-kameez",
     gradient: "linear-gradient(150deg,#efe9da 0%,#d9d0ba 45%,#b8ac8f 100%)",
     sizes: ["S", "M", "L", "XL"],
+    featuredOffer: true,
   },
   {
     id: "poonas-trouser",
@@ -67,8 +71,75 @@ export const PRODUCTS = [
     category: "shalwar-kameez",
     gradient: "linear-gradient(150deg,#f2eee2 0%,#e2dbc7 45%,#c4b998 100%)",
     sizes: ["S", "M", "L", "XL"],
+    featuredOffer: true,
+  },
+
+  // --- New products ---
+  {
+    id: "royal-navy-waistcoat",
+    brand: "KAPADYA SIGNATURE",
+    name: "Royal Navy Embroidered Waistcoat",
+    price: 1450,
+    mrp: 2600,
+    stock: 28,
+    category: "waistcoat",
+    gradient: "linear-gradient(150deg,#3d4f6b 0%,#243348 45%,#111a26 100%)",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    featuredOffer: true,
+  },
+  {
+    id: "maroon-velvet-waistcoat",
+    brand: "KAPADYA SIGNATURE",
+    name: "Maroon Velvet Waistcoat",
+    price: 1650,
+    mrp: 2990,
+    stock: 15,
+    category: "waistcoat",
+    gradient: "linear-gradient(150deg,#7a2c3b 0%,#591f2b 45%,#301019 100%)",
+    sizes: ["S", "M", "L", "XL"],
+  },
+  {
+    id: "khaddar-combo-earth",
+    brand: "LAKHANY",
+    name: "Earth Tone Shalwar Kameez + Waistcoat Combo",
+    price: 2200,
+    mrp: 3990,
+    stock: 20,
+    category: "shalwar-kameez-waistcoat",
+    gradient: "linear-gradient(150deg,#a98b5d 0%,#7d6440 45%,#4b3a26 100%)",
+    sizes: ["S", "M", "L", "XL"],
+    featuredOffer: true,
+  },
+  {
+    id: "charcoal-combo-classic",
+    brand: "BINSAEED & SANA SAFINAZ",
+    name: "Charcoal Classic Shalwar Kameez + Waistcoat Combo",
+    price: 2450,
+    mrp: 4290,
+    stock: 12,
+    category: "shalwar-kameez-waistcoat",
+    gradient: "linear-gradient(150deg,#4a4a4a 0%,#2e2e2e 45%,#151515 100%)",
+    sizes: ["M", "L", "XL", "XXL"],
+    featuredOffer: true,
+  },
+  {
+    id: "sky-blue-waistcoat",
+    brand: "POONAS COLLECTION",
+    name: "Sky Blue Textured Waistcoat",
+    price: 1200,
+    mrp: 2100,
+    stock: 33,
+    category: "waistcoat",
+    gradient: "linear-gradient(150deg,#7fb3d5 0%,#4a86ac 45%,#2b4f6b 100%)",
+    sizes: ["S", "M", "L", "XL"],
   },
 ];
+
+// Helper — discount % rounded down, used for the SALE badge and offer sorting
+export function getDiscountPercent(product) {
+  if (!product.mrp || product.mrp <= product.price) return 0;
+  return Math.round(((product.mrp - product.price) / product.mrp) * 100);
+}
 
 const CATEGORY_OPTIONS = [
   { value: "all", label: "All" },
@@ -77,9 +148,11 @@ const CATEGORY_OPTIONS = [
   { value: "shalwar-kameez-waistcoat", label: "Shalwar Kameez + Waistcoat" },
 ];
 
-function ProductCard({ product, index }) {
+// Exported so Offer.jsx (and anywhere else) can reuse the exact same card UI
+export function ProductCard({ product, index }) {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const discount = getDiscountPercent(product);
 
   return (
     <motion.div
@@ -95,7 +168,7 @@ function ProductCard({ product, index }) {
         style={{ background: product.gradient }}
       >
         <span className="absolute top-3 left-3 bg-[#D4AF37] text-black text-[11px] font-bold px-3 py-1 rounded-full">
-          SALE
+          {discount > 0 ? `${discount}% OFF` : "SALE"}
         </span>
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
         <span className="absolute bottom-4 w-full text-center text-white/60 text-sm tracking-wide font-serif">
