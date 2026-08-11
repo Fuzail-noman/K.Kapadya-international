@@ -95,7 +95,7 @@ export default function Home() {
           className="relative z-10 text-center mb-12"
         >
           <h1 className="font-serif text-4xl sm:text-6xl font-bold tracking-wide bg-gradient-to-r from-[#D4AF37] via-[#F4E19C] to-[#D4AF37] bg-clip-text text-transparent">
-            Kapadya
+            K. Kapadya
           </h1>
 
           <p className="mt-2 text-sm sm:text-base tracking-[6px] text-[#D4AF37]/70 uppercase">

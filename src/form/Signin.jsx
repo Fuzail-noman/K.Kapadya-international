@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -16,10 +16,10 @@ import { Country, City } from "country-state-city";
 import kapadyaLogo from "../assets/logo9.png";
 import { useAuth } from "../Context/AuthContext.jsx";
 import { API_BASE_URL } from "../auth/config.js";
-
+ 
 // Auth endpoints backend ke "/api/auth" prefix ke andar hain
 const AUTH_URL = `${API_BASE_URL}/api/auth`;
-
+ 
 export default function SignIn() {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -28,37 +28,76 @@ export default function SignIn() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [redirecting, setRedirecting] = useState(false); // 🐎 2-sec running animation before /collection
-
+ 
   const [formData, setFormData] = useState({
     fullName: "",
     phone: "",
-    country: "", // ISO code, e.g. "PK"
+    country: "", // ISO code, e.g. "PK" — dropdown/city lookup ke liye zaroori
     city: "",
     email: "",
     password: "",
   });
-
+ 
   const countries = useMemo(() => Country.getAllCountries(), []);
-
+ 
   const cities = useMemo(() => {
     if (!formData.country) return [];
     return City.getCitiesOfCountry(formData.country) || [];
   }, [formData.country]);
-
+ 
+  // detectedRef: user ne khud country choose ki hai to IP-detection usko
+  // overwrite na kare — sirf tab tak auto-fill karo jab tak user khud
+  // dropdown se kuch select nahi kar leta.
+  const userPickedCountry = useRef(false);
+ 
+  // Register form khulte hi IP se country detect karke khud-ba-khud
+  // dropdown mein select kar do — user ko khud dhoondna na pade.
+  useEffect(() => {
+    if (mode !== "register") return;
+ 
+    let cancelled = false;
+ 
+    async function detectCountry() {
+      try {
+        const res = await fetch("https://ipwho.is/");
+        const geo = await res.json();
+ 
+        if (cancelled || userPickedCountry.current) return;
+ 
+        // ipwho.is "country_code" ISO-2 format mein deta hai (e.g. "PK"),
+        // jo hamare Country dropdown ki value se seedha match ho jata hai.
+        const isoCode = geo?.country_code;
+        if (isoCode && Country.getCountryByCode(isoCode)) {
+          setFormData((prev) =>
+            prev.country ? prev : { ...prev, country: isoCode }
+          );
+        }
+      } catch {
+        // Detection fail ho to kuch nahi — user khud select kar lega
+      }
+    }
+ 
+    detectCountry();
+    return () => {
+      cancelled = true;
+    };
+  }, [mode]);
+ 
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === "country") {
+      userPickedCountry.current = true;
       setFormData((prev) => ({ ...prev, country: value, city: "" }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
     setError("");
   };
-
+ 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
+ 
     if (mode === "register") {
       if (formData.fullName.trim().length < 2) {
         setError("Please enter your full name.");
@@ -77,7 +116,7 @@ export default function SignIn() {
         return;
       }
     }
-
+ 
     if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
       setError("Please enter a valid email address.");
       return;
@@ -86,39 +125,48 @@ export default function SignIn() {
       setError("Password must be at least 6 characters.");
       return;
     }
-
+ 
     setLoading(true);
-
+ 
     try {
       const endpoint = mode === "login" ? "/login" : "/signup";
-      const body =
-        mode === "login"
-          ? { email: formData.email, password: formData.password }
-          : formData;
-
+ 
+      let body;
+      if (mode === "login") {
+        body = { email: formData.email, password: formData.password };
+      } else {
+        // formData.country abhi tak ISO code hai (e.g. "PK") kyunki wo
+        // City.getCitiesOfCountry() ke liye zaroori tha. Backend/Cart/Checkout
+        // saare "Pakistan" jaisa poora naam expect karte hain (delivery fee
+        // aur currency dono isi naam se match hote hain) — isliye submit
+        // karne se pehle poora naam nikaal lete hain.
+        const countryName = Country.getCountryByCode(formData.country)?.name || formData.country;
+        body = { ...formData, country: countryName };
+      }
+ 
       const res = await fetch(`${AUTH_URL}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-
+ 
       const data = await res.json();
-
+ 
       if (!data.success) {
         setError(data.message || "Something went wrong. Please try again.");
         setLoading(false);
         return;
       }
-
+ 
       // ⭐ Yehi asal step hai: AuthContext ke through user + token
       // localStorage mein save hote hain, aur poori app ko pata chal jata hai.
       login(data.user, data.token);
-
+ 
       // Ab loading band karke 2 sec ka running animation dikhayenge,
       // uske baad /collection page pe navigate karenge.
       setLoading(false);
       setRedirecting(true);
-
+ 
       setTimeout(() => {
         navigate("/collection");
       }, 2000);
@@ -127,11 +175,12 @@ export default function SignIn() {
       setLoading(false);
     }
   };
-
+ 
   const switchMode = (newMode) => {
     if (newMode === mode) return;
     setMode(newMode);
     setError("");
+    userPickedCountry.current = false;
     setFormData({
       fullName: "",
       phone: "",
@@ -141,21 +190,21 @@ export default function SignIn() {
       password: "",
     });
   };
-
+ 
   return (
     <section className="relative min-h-screen w-full bg-[#0B0B0B] flex items-center justify-center px-4 py-12 overflow-hidden">
       {/* Ambient gold glow orbs */}
       <motion.div
-        className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-[#D4AF37]/10 blur-[100px]"
+        className="absolute -top-32 -left-32 w-72 h-72 sm:w-96 sm:h-96 rounded-full bg-[#D4AF37]/10 blur-[100px]"
         animate={{ scale: [1, 1.15, 1], opacity: [0.5, 0.8, 0.5] }}
         transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
       />
       <motion.div
-        className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-[#D4AF37]/10 blur-[100px]"
+        className="absolute -bottom-32 -right-32 w-72 h-72 sm:w-96 sm:h-96 rounded-full bg-[#D4AF37]/10 blur-[100px]"
         animate={{ scale: [1.15, 1, 1.15], opacity: [0.8, 0.5, 0.8] }}
         transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
       />
-
+ 
       {/* Fine grid texture overlay */}
       <div
         className="absolute inset-0 opacity-[0.03]"
@@ -165,12 +214,12 @@ export default function SignIn() {
           backgroundSize: "48px 48px",
         }}
       />
-
+ 
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="relative w-full max-w-md bg-[#111111] border border-[#D4AF37]/25 rounded-3xl shadow-2xl shadow-black/60 px-8 py-10 sm:px-10 sm:py-12 my-8"
+        className="relative w-full max-w-md bg-[#111111] border border-[#D4AF37]/25 rounded-3xl shadow-2xl shadow-black/60 px-6 py-8 sm:px-10 sm:py-12 my-8"
       >
         {/* Redirect overlay — original galloping horse silhouette before /collection */}
         <AnimatePresence>
@@ -193,7 +242,7 @@ export default function SignIn() {
                   <span className="block w-7 h-[3px] bg-[#D4AF37]/40 rounded-full" />
                   <span className="block w-8 h-[3px] bg-[#D4AF37]/30 rounded-full" />
                 </motion.div>
-
+ 
                 {/* Horse wrapper — handles left-right run + direction flip */}
                 <motion.div
                   className="relative z-10"
@@ -218,32 +267,32 @@ export default function SignIn() {
                   >
                     {/* Body */}
                     <ellipse cx="120" cy="66" rx="58" ry="27" fill="#D4AF37" />
-
+ 
                     {/* Chest / neck */}
                     <path
                       d="M162,50 C178,32 196,28 208,36 L200,52 C188,48 176,60 168,72 Z"
                       fill="#D4AF37"
                     />
-
+ 
                     {/* Head + muzzle */}
                     <path
                       d="M204,34 C218,28 232,32 234,42 C235,50 224,55 210,53 C202,52 198,46 200,40 Z"
                       fill="#D4AF37"
                     />
-
+ 
                     {/* Ear */}
                     <path d="M210,32 L214,18 L219,33 Z" fill="#D4AF37" />
-
+ 
                     {/* Tail */}
                     <path
                       d="M66,54 C42,42 22,46 14,56 C24,58 34,64 44,72 C52,68 60,64 66,58 C58,62 50,64 44,62 C50,58 58,56 66,54 Z"
                       fill="#D4AF37"
                     />
-
+ 
                     {/* Mane flicks */}
                     <path d="M160,42 L168,30 L172,44 Z" fill="#D4AF37" />
                     <path d="M148,40 L155,28 L160,42 Z" fill="#D4AF37" />
-
+ 
                     {/* Front legs (shoulder pivot) */}
                     <motion.g
                       style={{ transformOrigin: "163px 84px" }}
@@ -265,7 +314,7 @@ export default function SignIn() {
                         stroke="#D4AF37" strokeWidth="12" strokeLinecap="round"
                       />
                     </motion.g>
-
+ 
                     {/* Back legs (hip pivot) — opposite phase for gallop feel */}
                     <motion.g
                       style={{ transformOrigin: "82px 84px" }}
@@ -293,7 +342,7 @@ export default function SignIn() {
             </motion.div>
           )}
         </AnimatePresence>
-
+ 
         {/* Logo + brand */}
         <div className="flex flex-col items-center text-center mb-8">
           <motion.img
@@ -302,16 +351,16 @@ export default function SignIn() {
             initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="w-20 h-20 object-contain mb-4"
+            className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-4"
           />
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-[3px] text-white">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-[3px] text-white">
             KAPADYA
           </h1>
           <p className="text-[#D4AF37] text-xs tracking-[4px] uppercase mt-1">
             International — By Action
           </p>
         </div>
-
+ 
         {/* Tab switcher */}
         <div className="relative flex bg-[#1A1A1A] rounded-full p-1 mb-8 border border-[#D4AF37]/15">
           <button
@@ -336,7 +385,7 @@ export default function SignIn() {
             transition={{ type: "spring", stiffness: 400, damping: 32 }}
           />
         </div>
-
+ 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
           <AnimatePresence mode="wait">
@@ -365,7 +414,7 @@ export default function SignIn() {
                     />
                   </div>
                 </div>
-
+ 
                 <div>
                   <label className="block text-white text-sm font-medium mb-2">
                     Phone Number
@@ -382,7 +431,7 @@ export default function SignIn() {
                     />
                   </div>
                 </div>
-
+ 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-white text-sm font-medium mb-2">
@@ -405,7 +454,7 @@ export default function SignIn() {
                       </select>
                     </div>
                   </div>
-
+ 
                   <AnimatePresence mode="wait">
                     <motion.div
                       key={formData.country ? "city-enabled" : "city-disabled"}
@@ -441,7 +490,7 @@ export default function SignIn() {
               </motion.div>
             )}
           </AnimatePresence>
-
+ 
           <div>
             <label className="block text-white text-sm font-medium mb-2">
               Email
@@ -458,7 +507,7 @@ export default function SignIn() {
               />
             </div>
           </div>
-
+ 
           <div>
             <label className="block text-white text-sm font-medium mb-2">
               Password
@@ -482,7 +531,7 @@ export default function SignIn() {
               </button>
             </div>
           </div>
-
+ 
           <AnimatePresence>
             {error && (
               <motion.p
@@ -495,7 +544,7 @@ export default function SignIn() {
               </motion.p>
             )}
           </AnimatePresence>
-
+ 
           <motion.button
             type="submit"
             disabled={loading || redirecting}
@@ -515,7 +564,7 @@ export default function SignIn() {
             )}
           </motion.button>
         </form>
-
+ 
         <p className="text-center text-gray-500 text-xs mt-8">
           {mode === "login" ? (
             <>

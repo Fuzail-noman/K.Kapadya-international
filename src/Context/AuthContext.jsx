@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
-
+ 
 const AuthContext = createContext(null);
-
+ 
 /**
  * AuthProvider — poori app ke around lagega (App.jsx mein).
  * Yeh "user" aur "token" dono ko localStorage mein rakhta hai,
@@ -12,12 +12,12 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true); // page reload pe localStorage check hone tak true
-
+ 
   // App load / refresh hote hi check karo pehle se login hai ya nahi
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     const storedToken = localStorage.getItem("token");
-
+ 
     if (storedUser && storedToken) {
       try {
         setUser(JSON.parse(storedUser));
@@ -30,7 +30,7 @@ export function AuthProvider({ children }) {
     }
     setLoading(false);
   }, []);
-
+ 
   // Login / Signup success ke baad yeh call hoga (Signin.jsx se)
   const login = (userData, authToken) => {
     localStorage.setItem("user", JSON.stringify(userData));
@@ -40,7 +40,7 @@ export function AuthProvider({ children }) {
     // Navbar jaise components ko batane ke liye (dusre tabs mein bhi sync ho jaye)
     window.dispatchEvent(new Event("authChanged"));
   };
-
+ 
   // Sign Out par yeh call hoga
   const logout = () => {
     localStorage.removeItem("user");
@@ -49,7 +49,7 @@ export function AuthProvider({ children }) {
     setToken(null);
     window.dispatchEvent(new Event("authChanged"));
   };
-
+ 
   return (
     <AuthContext.Provider
       value={{
@@ -65,7 +65,7 @@ export function AuthProvider({ children }) {
     </AuthContext.Provider>
   );
 }
-
+ 
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used inside <AuthProvider>");

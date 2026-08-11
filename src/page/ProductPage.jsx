@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router";
 import { ShoppingBag, Minus, Plus, ArrowLeft } from "lucide-react";
 import { useAuth } from "../Context/AuthContext.jsx";
 import { PRODUCTS } from "./Collection.jsx";
-import { formatPrice } from "../utils/currency.js";
+// import { formatPrice } from "../utils/currency.js";
 
 export default function ProductPage() {
   const { id } = useParams();

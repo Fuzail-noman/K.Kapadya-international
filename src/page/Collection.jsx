@@ -2,14 +2,13 @@ import { motion } from "framer-motion";
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import Navbar from "../Navbar/navbar.jsx";
-import { useAuth } from "../Context/AuthContext.jsx";
-import { formatPrice } from "../utils/currency.js";
+import { useCurrency } from "../Context/CurrencyContext.jsx";
 import Footer2 from "../Footer/footer.jsx";
-
-
+ 
+ 
 // Product data — imported by CollectionPage.jsx, ProductPage.jsx, and Offer.jsx
 // Prices are stored in PKR (base currency); they're converted + displayed in
-// each user's local currency at render time via formatPrice().
+// each user's local currency at render time via useCurrency().formatPrice().
 // NOTE: `category` values used by the filter dropdown are:
 //   "waistcoat" | "shalwar-kameez" | "shalwar-kameez-waistcoat"
 // `featuredOffer: true` -> shown on the /offer page.
@@ -73,7 +72,7 @@ export const PRODUCTS = [
     sizes: ["S", "M", "L", "XL"],
     featuredOffer: true,
   },
-
+ 
   // --- New products ---
   {
     id: "royal-navy-waistcoat",
@@ -134,26 +133,26 @@ export const PRODUCTS = [
     sizes: ["S", "M", "L", "XL"],
   },
 ];
-
+ 
 // Helper — discount % rounded down, used for the SALE badge and offer sorting
 export function getDiscountPercent(product) {
   if (!product.mrp || product.mrp <= product.price) return 0;
   return Math.round(((product.mrp - product.price) / product.mrp) * 100);
 }
-
+ 
 const CATEGORY_OPTIONS = [
   { value: "all", label: "All" },
   { value: "waistcoat", label: "Waistcoat" },
   { value: "shalwar-kameez", label: "Shalwar Kameez" },
   { value: "shalwar-kameez-waistcoat", label: "Shalwar Kameez + Waistcoat" },
 ];
-
+ 
 // Exported so Offer.jsx (and anywhere else) can reuse the exact same card UI
 export function ProductCard({ product, index }) {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { formatPrice } = useCurrency();
   const discount = getDiscountPercent(product);
-
+ 
   return (
     <motion.div
       initial={{ opacity: 0, y: 24 }}
@@ -171,25 +170,25 @@ export function ProductCard({ product, index }) {
           {discount > 0 ? `${discount}% OFF` : "SALE"}
         </span>
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-        <span className="absolute bottom-4 w-full text-center text-white/60 text-sm tracking-wide font-serif">
+        <span className="absolute bottom-4 w-full text-center text-white/60 text-sm tracking-wide font-serif px-2 truncate">
           {product.brand}
         </span>
       </div>
-
-      <div className="p-4 flex flex-col flex-1">
+ 
+      <div className="p-3 sm:p-4 flex flex-col flex-1">
         <span className="text-[11px] text-[#9b9488] tracking-wide">{product.brand}</span>
-        <h3 className="font-serif text-lg text-[#f3ede0] my-1 leading-snug">
+        <h3 className="font-serif text-base sm:text-lg text-[#f3ede0] my-1 leading-snug">
           {product.name}
         </h3>
-        <div className="flex items-baseline gap-2 mb-4">
+        <div className="flex items-baseline gap-2 mb-4 flex-wrap">
           <span className="line-through text-[#9b9488] text-sm">
-            {formatPrice(product.mrp, user)}
+            {formatPrice(product.mrp)}
           </span>
           <span className="text-[#D4AF37] font-bold">
-            {formatPrice(product.price, user)}
+            {formatPrice(product.price)}
           </span>
         </div>
-
+ 
         <Link
           to={`/product/${product.id}`}
           onClick={(e) => e.stopPropagation()}
@@ -201,33 +200,33 @@ export function ProductCard({ product, index }) {
     </motion.div>
   );
 }
-
+ 
 export default function CollectionPage() {
   const [category, setCategory] = useState("all");
-
+ 
   const filteredProducts = useMemo(() => {
     if (category === "all") return PRODUCTS;
     return PRODUCTS.filter((p) => p.category === category);
   }, [category]);
-
+ 
   return (
     <>
       <Navbar />
-
-      <div className="w-full px-5 pb-20 bg-[#0B0B0B] min-h-screen">
+ 
+      <div className="w-full px-4 sm:px-5 pb-20 bg-[#0B0B0B] min-h-screen">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-center py-14"
+          className="text-center py-10 sm:py-14"
         >
           <span className="text-[#D4AF37] text-xs tracking-[0.3em]">NEW SEASON</span>
-          <h1 className="font-serif text-4xl md:text-5xl text-[#f3ede0] mt-3">
+          <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl text-[#f3ede0] mt-3">
             Stitched Collection
           </h1>
           <div className="w-16 h-[2px] mx-auto mt-3 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent" />
         </motion.div>
-
+ 
         {/* Category filter dropdown */}
         <div className="flex justify-center md:justify-end mb-8">
           <div className="relative w-full max-w-[260px]">
@@ -247,13 +246,13 @@ export default function CollectionPage() {
             </span>
           </div>
         </div>
-
+ 
         {filteredProducts.length === 0 ? (
           <div className="text-center py-16 text-[#9b9488]">
             No products found in this category yet.
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
             {filteredProducts.map((p, i) => (
               <ProductCard key={p.id} product={p} index={i} />
             ))}

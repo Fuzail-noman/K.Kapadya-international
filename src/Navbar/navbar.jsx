@@ -3,20 +3,20 @@ import { useState, useEffect } from "react";
 import { Menu, X, ShoppingCart } from "lucide-react";
 import logo from "../assets/logo9.png";
 import { Link, useLocation, useNavigate } from "react-router";
-
+ 
 import { useAuth } from "../Context/AuthContext.jsx";
 import TopBar from "./Topbar.jsx";
-
-
-
+ 
+ 
+ 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
-
+ 
   const { user, isAuthenticated, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-
+ 
   // Cart count ko sync karo — user badalte hi (login/logout) ya cart update hote hi
   useEffect(() => {
     const syncCart = () => {
@@ -29,42 +29,42 @@ export default function Navbar() {
         setCartCount(0);
       }
     };
-
+ 
     syncCart();
-
+ 
     window.addEventListener("storage", syncCart);
     window.addEventListener("cartUpdated", syncCart);
     window.addEventListener("authChanged", syncCart);
-
+ 
     return () => {
       window.removeEventListener("storage", syncCart);
       window.removeEventListener("cartUpdated", syncCart);
       window.removeEventListener("authChanged", syncCart);
     };
   }, [isAuthenticated, user]);
-
+ 
   const handleLogout = () => {
     logout();
     setMenuOpen(false);
     setCartCount(0);
     navigate("/signin");
   };
-
+ 
   const navItems = [
- { name: "HOME", path: "/" },
+    { name: "HOME", path: "/" },
     { name: "COLLECTION", path: "/collection" },
     { name: "OFFER", path: "/offer" },
   ];
-
+ 
   return (
     <>
       <TopBar />
-
+ 
       <motion.nav
         initial={{ y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6 }}
-        className="flex items-center justify-between px-6 md:px-16 py-4 bg-[#0B0B0B] border-b border-[#D4AF37]/20 relative z-50 shadow-lg"
+        className="flex items-center justify-between px-4 sm:px-6 md:px-16 py-3 sm:py-4 bg-[#0B0B0B] border-b border-[#D4AF37]/20 relative z-50 shadow-lg"
       >
         {/* LOGO */}
         <Link to="/home">
@@ -72,12 +72,12 @@ export default function Navbar() {
             whileHover={{ scale: 1.08 }}
             src={logo}
             alt="Logo"
-            className="w-30 cursor-pointer"
+            className="w-24 sm:w-28 md:w-30 cursor-pointer"
           />
         </Link>
-
+ 
         {/* Desktop Menu */}
-        <div className="hidden md:flex items-center gap-10">
+        <div className="hidden md:flex items-center gap-6 lg:gap-10">
           {navItems.map((item) => (
             <Link
               key={item.path}
@@ -99,13 +99,13 @@ export default function Navbar() {
             </Link>
           ))}
         </div>
-
+ 
         {/* Desktop Right */}
-        <div className="hidden md:flex items-center gap-4">
+        <div className="hidden md:flex items-center gap-3 lg:gap-4">
           {!isAuthenticated ? (
             <>
               <Link to="/signin">
-                <button className="px-5 py-2 border border-[#D4AF37] text-[#D4AF37] rounded-full hover:bg-[#D4AF37] hover:text-black transition duration-300">
+                <button className="px-4 lg:px-5 py-2 border border-[#D4AF37] text-[#D4AF37] rounded-full hover:bg-[#D4AF37] hover:text-black transition duration-300 text-sm">
                   Sign In
                 </button>
               </Link>
@@ -115,12 +115,12 @@ export default function Navbar() {
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               onClick={handleLogout}
-              className="px-5 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition duration-300"
+              className="px-4 lg:px-5 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition duration-300 text-sm"
             >
               Sign Out
             </motion.button>
           )}
-
+ 
           {/* Cart */}
           <Link to="/cart" className="relative">
             <ShoppingCart
@@ -138,23 +138,23 @@ export default function Navbar() {
             )}
           </Link>
         </div>
-
+ 
         {/* Mobile */}
         <div className="md:hidden flex items-center gap-4">
           <Link to="/cart" className="relative">
-            <ShoppingCart size={24} className="text-[#D4AF37]" />
+            <ShoppingCart size={22} className="text-[#D4AF37]" />
             {cartCount > 0 && (
               <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
                 {cartCount}
               </span>
             )}
           </Link>
-
+ 
           <button onClick={() => setMenuOpen(!menuOpen)} className="text-[#D4AF37]">
-            {menuOpen ? <X size={28} /> : <Menu size={28} />}
+            {menuOpen ? <X size={26} /> : <Menu size={26} />}
           </button>
         </div>
-
+ 
         {/* Mobile Menu */}
         {menuOpen && (
           <motion.div
@@ -184,7 +184,7 @@ export default function Navbar() {
                 />
               </Link>
             ))}
-
+ 
             {!isAuthenticated ? (
               <Link to="/signin" onClick={() => setMenuOpen(false)}>
                 <button className="w-48 py-3 border border-[#D4AF37] text-[#D4AF37] rounded-full hover:bg-[#D4AF37] hover:text-black transition duration-300">
@@ -202,8 +202,8 @@ export default function Navbar() {
           </motion.div>
         )}
       </motion.nav>
-
-      
+ 
+ 
     </>
   );
 }
