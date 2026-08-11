@@ -10,7 +10,7 @@ import ProductPage from "./page/ProductPage.jsx";
 import CartPage from "./page/Card.jsx";
 import CheckoutPage from "./page/Proceed.jsx";
 import OfferPage from "./page/Offer.jsx";
- 
+
 function App() {
   return (
     <AuthProvider>
@@ -19,19 +19,19 @@ function App() {
           <Routes>
             {/* Home page — bina login ke bhi khulega */}
             <Route path="/" element={<Home />} />
- 
+
             {/* Collection — public, browsing ke liye login zaroori nahi */}
             <Route path="/collection" element={<CollectionPage />} />
- 
+
             <Route path="/signin" element={<SignIn />} />
             <Route path="/checkout" element={<CheckoutPage />} />
- 
+
             <Route path="/offer" element={<OfferPage />} />
- 
+
             {/* Product detail bhi public — sirf "Add to cart" pe login maanga jayega
                 (ProductPage.jsx mein already yeh logic hai: !isAuthenticated -> /signin) */}
             <Route path="/product/:id" element={<ProductPage />} />
- 
+
             {/* Cart abhi bhi protected — checkout se pehle login zaroori */}
             <Route
               path="/cart"
@@ -41,7 +41,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
- 
+
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </RouteLoader>
@@ -49,5 +49,5 @@ function App() {
     </AuthProvider>
   );
 }
- 
+
 export default App;

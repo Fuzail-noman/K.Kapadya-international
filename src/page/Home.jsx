@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router";
 
-import Footer1 from "../Footer/footer1.jsx";
+// import Footer1 from "../Footer/footer1.jsx";
 import Carousel from "../Navbar/CAROUSEL.jsx";
 // import Extra1 from "./Extra1.jsx";
 import { PRODUCTS, ProductCard } from "./Collection.jsx";

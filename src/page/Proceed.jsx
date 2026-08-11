@@ -13,7 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { useAuth } from "../Context/AuthContext.jsx";
-// import { formatPrice } from "../utils/currency.js";
+import { formatPrice } from "../utils/currency.js";
 import { API_BASE_URL } from "../auth/config.js";
  
 const DELIVERY_FEE_PAKISTAN_PKR = 4000;
@@ -29,7 +29,7 @@ const STEP = { SUMMARY: 0, SHIPPING: 1, SUCCESS: 2 };
  
 export default function CheckoutPage() {
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
+  const { user, token ,  isAuthenticated } = useAuth();
   const fileInputRef = useRef(null);
  
   const [step, setStep] = useState(STEP.SUMMARY);
@@ -146,11 +146,13 @@ export default function CheckoutPage() {
       formData.append("subtotalPKR", subtotalInPKR);
       formData.append("receipt", receipt.file);
  
-      const res = await fetch(`${API_BASE_URL}/api/orders`, {
-        method: "POST",
-        body: formData,
-      });
- 
+    const res = await fetch(`${API_BASE_URL}/api/orders`, {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${token}`,
+  },
+  body: formData,
+});
       const data = await res.json();
  
       if (!res.ok) {

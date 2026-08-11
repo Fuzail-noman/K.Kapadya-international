@@ -13,7 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { useAuth } from "../Context/AuthContext.jsx";
-import { useCurrency } from "../Context/CurrencyContext.jsx";
+import { formatPrice } from "../utils/currency.js";
 import { API_BASE_URL } from "../auth/config.js";
  
 const DELIVERY_FEE_PAKISTAN_PKR = 4000;
@@ -29,8 +29,9 @@ const STEP = { SUMMARY: 0, SHIPPING: 1, SUCCESS: 2 };
  
 export default function CheckoutPage() {
   const navigate = useNavigate();
+  // token bhi nikal liya — order request ke saath Authorization header
+  // bhejne ke liye zaroori hai, warna backend 401 "Login required" deta hai.
   const { user, token, isAuthenticated } = useAuth();
-  const { formatPrice } = useCurrency();
   const fileInputRef = useRef(null);
  
   const [step, setStep] = useState(STEP.SUMMARY);
@@ -135,12 +136,15 @@ export default function CheckoutPage() {
     setSubmitError("");
     if (!validate()) return;
  
+    if (!token) {
+      setSubmitError("Session expired. Please sign in again.");
+      return;
+    }
+ 
     setSubmitting(true);
     try {
       const formData = new FormData();
-      // NOTE: userId ab bheja nahi jata — backend ab request ke JWT
-      // (Authorization header) se req.user.id nikalta hai, taake koi
-      // kisi aur ke naam se order na bana sake.
+      // userId ab nahi bhejni — backend token se req.user.id khud nikal leta hai.
       formData.append("name", form.name);
       formData.append("phone", form.phone);
       formData.append("country", form.country);
@@ -152,7 +156,8 @@ export default function CheckoutPage() {
       const res = await fetch(`${API_BASE_URL}/api/orders`, {
         method: "POST",
         headers: {
-          // Backend ka verifyUser middleware isi header se login check karta hai
+          // FormData ke saath Content-Type manually mat lagana — browser
+          // khud multipart boundary set karta hai. Sirf Authorization chahiye.
           Authorization: `Bearer ${token}`,
         },
         body: formData,
@@ -198,7 +203,7 @@ export default function CheckoutPage() {
   };
  
   return (
-    <div className="min-h-screen bg-[#0B0B0B] px-4 sm:px-5 pb-24 pt-6 sm:pt-7">
+    <div className="min-h-screen bg-[#0B0B0B] px-5 pb-24 pt-7">
       <div className="max-w-md mx-auto">
         {step !== STEP.SUCCESS && (
           <button
@@ -256,26 +261,24 @@ export default function CheckoutPage() {
               exit="exit"
               transition={{ duration: 0.3, ease: "easeOut" }}
             >
-              <h1 className="font-serif text-2xl sm:text-3xl text-[#f3ede0] mb-6">
-                Checkout Summary
-              </h1>
+              <h1 className="font-serif text-3xl text-[#f3ede0] mb-6">Checkout Summary</h1>
  
-              <div className="bg-[#141317] border border-[#D4AF37]/20 rounded-2xl p-4 sm:p-5">
+              <div className="bg-[#141317] border border-[#D4AF37]/20 rounded-2xl p-5">
                 <div className="flex justify-between items-center text-sm mb-3">
                   <span className="text-[#f3ede0]">Subtotal</span>
-                  <span className="text-[#f3ede0]">{formatPrice(subtotalInPKR)}</span>
+                  <span className="text-[#f3ede0]">{formatPrice(subtotalInPKR, user)}</span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-[#D4AF37] flex items-center gap-1.5">
                     <Truck size={14} /> Delivery
                   </span>
-                  <span className="text-[#D4AF37]">{formatPrice(deliveryInPKR)}</span>
+                  <span className="text-[#D4AF37]">{formatPrice(deliveryInPKR, user)}</span>
                 </div>
                 <div className="h-px bg-[#D4AF37]/20 my-4" />
                 <div className="flex justify-between items-center">
                   <span className="font-bold text-[#f3ede0]">Total</span>
-                  <span className="font-bold text-[#f3ede0] text-lg sm:text-xl">
-                    {formatPrice(grandTotalInPKR)}
+                  <span className="font-bold text-[#f3ede0] text-xl">
+                    {formatPrice(grandTotalInPKR, user)}
                   </span>
                 </div>
               </div>
@@ -302,7 +305,7 @@ export default function CheckoutPage() {
               exit="exit"
               transition={{ duration: 0.3, ease: "easeOut" }}
             >
-              <h1 className="font-serif text-2xl sm:text-3xl text-[#f3ede0] mb-6 text-center">
+              <h1 className="font-serif text-3xl text-[#f3ede0] mb-6 text-center">
                 Shipping Details
               </h1>
  
@@ -333,7 +336,7 @@ export default function CheckoutPage() {
  
                 <p className="text-[10px] text-[#9b9488] -mt-1.5 px-1">
                   Delivery: {isPakistan ? "Pakistan rate" : "International rate"} —{" "}
-                  <span className="text-[#D4AF37]">{formatPrice(deliveryInPKR)}</span>
+                  <span className="text-[#D4AF37]">{formatPrice(deliveryInPKR, user)}</span>
                 </p>
  
                 {/* Full Payment */}
@@ -345,13 +348,13 @@ export default function CheckoutPage() {
                   <p className="text-[#9b9488] text-xs leading-relaxed mb-3">
                     Please send your full payment of{" "}
                     <span className="text-[#f3ede0] font-semibold">
-                      {formatPrice(grandTotalInPKR)}
+                      {formatPrice(grandTotalInPKR, user)}
                     </span>{" "}
                     via {PAYMENT_DETAILS.bank} to the account below to confirm your order,
                     then upload the payment screenshot.
                   </p>
  
-                  <div className="flex items-center justify-between gap-3 bg-[#0B0B0B] border border-[#D4AF37]/20 rounded-xl px-3 sm:px-4 py-3">
+                  <div className="flex items-center justify-between gap-3 bg-[#0B0B0B] border border-[#D4AF37]/20 rounded-xl px-4 py-3">
                     <div className="min-w-0">
                       <p className="text-[10px] uppercase tracking-wide text-[#9b9488]">
                         {PAYMENT_DETAILS.accountTitle} · Account Number
@@ -490,7 +493,7 @@ export default function CheckoutPage() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4, ease: "easeOut" }}
-              className="bg-[#141317] border border-[#D4AF37]/20 rounded-2xl p-6 sm:p-8 text-center mt-10"
+              className="bg-[#141317] border border-[#D4AF37]/20 rounded-2xl p-8 text-center mt-10"
             >
               <motion.div
                 initial={{ scale: 0, rotate: -20 }}
@@ -504,7 +507,7 @@ export default function CheckoutPage() {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.25 }}
-                className="font-serif text-xl sm:text-2xl text-green-400 font-bold mb-2"
+                className="font-serif text-2xl text-green-400 font-bold mb-2"
               >
                 Order Placed Successfully
               </motion.h2>
@@ -559,3 +562,4 @@ function Field({ placeholder, value, onChange, error, type = "text" }) {
     </div>
   );
 }
+ 
