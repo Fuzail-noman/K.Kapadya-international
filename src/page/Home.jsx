@@ -88,26 +88,30 @@ export default function Home() {
         </div>
 
         {/* Welcome greeting */}
-        <motion.div
-          initial={{ opacity: 0, y: -16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="relative z-10 text-center mb-12"
-        >
-          <h1 className="font-serif text-4xl sm:text-6xl font-bold tracking-wide bg-gradient-to-r from-[#D4AF37] via-[#F4E19C] to-[#D4AF37] bg-clip-text text-transparent">
-            K. Kapadya
-          </h1>
+       <motion.div
+  initial={{ opacity: 0, y: -16 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.6, ease: "easeOut" }}
+  className="relative z-10 text-center mb-12"
+>
+  <h1 className="font-serif text-4xl sm:text-6xl font-bold tracking-wide bg-gradient-to-r from-[#D4AF37] via-[#F4E19C] to-[#D4AF37] bg-clip-text text-transparent">
+    K. Kapadya
+  </h1>
 
-          <p className="mt-2 text-sm sm:text-base tracking-[6px] text-[#D4AF37]/70 uppercase">
-            International by
-          </p>
-          <p className="mt-2 text-sm sm:text-base tracking-[6px] text-[#D4AF37]/70 uppercase">
-            Action
-          </p>
+  <p className="mt-2 text-sm sm:text-base tracking-[6px] text-[#D4AF37]/70 uppercase">
+    International
+  </p>
 
-          <div className="w-16 h-[2px] mx-auto mt-5 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent" />
-        </motion.div>
+  <p className="mt-2 text-sm sm:text-base tracking-[6px] text-[#D4AF37]/70 uppercase">
+    by
+  </p>
 
+  <p className="mt-2 text-sm sm:text-base tracking-[6px] text-[#D4AF37]/70 uppercase">
+    Action
+  </p>
+
+  <div className="w-16 h-[2px] mx-auto mt-5 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent" />
+</motion.div>
         <div className="relative z-10">
           <Carousel />
         </div>
