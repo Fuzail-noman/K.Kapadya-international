@@ -29,7 +29,7 @@ const STEP = { SUMMARY: 0, SHIPPING: 1, SUCCESS: 2 };
  
 export default function CheckoutPage() {
   const navigate = useNavigate();
-  const { user, token ,  isAuthenticated } = useAuth();
+  const { user, token, isAuthenticated } = useAuth();
   const fileInputRef = useRef(null);
  
   const [step, setStep] = useState(STEP.SUMMARY);
@@ -146,13 +146,13 @@ export default function CheckoutPage() {
       formData.append("subtotalPKR", subtotalInPKR);
       formData.append("receipt", receipt.file);
  
-    const res = await fetch(`${API_BASE_URL}/api/orders`, {
-  method: "POST",
-  headers: {
-    Authorization: `Bearer ${token}`,
-  },
-  body: formData,
-});
+      const res = await fetch(`${API_BASE_URL}/api/orders`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
       const data = await res.json();
  
       if (!res.ok) {
@@ -509,17 +509,30 @@ export default function CheckoutPage() {
               >
                 We will contact you soon on WhatsApp
               </motion.p>
-              <motion.button
+ 
+              <motion.div
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.45 }}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => navigate("/collection")}
-                className="px-8 py-3 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#e8c766] text-black font-bold"
+                className="flex flex-col gap-3"
               >
-                Back to Shop
-              </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => navigate("/track-order")}
+                  className="px-8 py-3 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#e8c766] text-black font-bold"
+                >
+                  Track Your Order
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => navigate("/collection")}
+                  className="px-8 py-3 rounded-full border border-[#D4AF37]/40 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black transition font-bold"
+                >
+                  Back to Shop
+                </motion.button>
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>

@@ -54,6 +54,7 @@ export default function Navbar() {
     { name: "HOME", path: "/" },
     { name: "COLLECTION", path: "/collection" },
     { name: "OFFER", path: "/offer" },
+     { name: "Track-Order", path: "/track-order" },
   ];
  
   return (

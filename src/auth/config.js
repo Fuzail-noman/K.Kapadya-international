@@ -2,4 +2,6 @@
 // Sirf yahan backend URL change karo — poori app mein apply ho jayega
 
 export const API_BASE_URL =
- import.meta.env.VITE_API_URL || " https://backend-k-kapadya.vercel.app";
+//  import.meta.env.VITE_API_URL || " https://backend-k-kapadya.vercel.app";
+
+import.meta.env.VITE_API_URL || "http://localhost:5000";
