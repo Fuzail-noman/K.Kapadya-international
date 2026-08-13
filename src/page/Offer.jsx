@@ -4,7 +4,11 @@ import { Flame, Tag, Timer } from "lucide-react";
 import Navbar from "../Navbar/navbar.jsx";
 import Footer2 from "../Footer/footer.jsx";
 import { PRODUCTS, ProductCard, getDiscountPercent } from "./Collection.jsx";
-
+ 
+// Price display: ProductCard (Collection.jsx se import hui) andar hi
+// useCurrency() use karta hai, isliye is file mein currency ke liye
+// kuch alag karne ki zaroorat nahi.
+ 
 // Countdown target — resets every time it "expires" so the banner always
 // shows an active-looking sale (swap for a real end-date from your backend
 // whenever you want a genuine, non-repeating flash sale).
@@ -13,10 +17,10 @@ function getNextMidnight() {
   d.setHours(24, 0, 0, 0);
   return d;
 }
-
+ 
 function useCountdown(target) {
   const [msLeft, setMsLeft] = useState(target - Date.now());
-
+ 
   useEffect(() => {
     const id = setInterval(() => {
       const diff = target - Date.now();
@@ -24,7 +28,7 @@ function useCountdown(target) {
     }, 1000);
     return () => clearInterval(id);
   }, [target]);
-
+ 
   const totalSeconds = Math.max(0, Math.floor(msLeft / 1000));
   return {
     hours: String(Math.floor(totalSeconds / 3600)).padStart(2, "0"),
@@ -32,7 +36,7 @@ function useCountdown(target) {
     seconds: String(totalSeconds % 60).padStart(2, "0"),
   };
 }
-
+ 
 function CountdownBlock({ value, label }) {
   return (
     <div className="flex flex-col items-center bg-black/40 border border-[#D4AF37]/30 rounded-xl px-4 py-2.5 min-w-[64px]">
@@ -41,26 +45,26 @@ function CountdownBlock({ value, label }) {
     </div>
   );
 }
-
+ 
 export default function OfferPage() {
   const target = useMemo(getNextMidnight, []);
   const { hours, minutes, seconds } = useCountdown(target);
-
+ 
   // Offer items = flagged as featuredOffer, sorted by biggest discount first
   const offerProducts = useMemo(() => {
     return PRODUCTS.filter((p) => p.featuredOffer).sort(
       (a, b) => getDiscountPercent(b) - getDiscountPercent(a)
     );
   }, []);
-
+ 
   const maxDiscount = offerProducts.length
     ? Math.max(...offerProducts.map(getDiscountPercent))
     : 0;
-
+ 
   return (
     <>
       <Navbar />
-
+ 
       <div className="w-full bg-[#0B0B0B] min-h-screen">
         {/* Hero banner — CSS-only gold shimmer, no external images */}
         <div className="relative overflow-hidden px-5 py-16 sm:py-20 text-center border-b border-[#D4AF37]/20">
@@ -85,7 +89,7 @@ export default function OfferPage() {
             animate={{ x: ["-30%", "30%"] }}
             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
           />
-
+ 
           <motion.div
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -102,7 +106,7 @@ export default function OfferPage() {
               Handpicked stitched pieces at our steepest prices this season.
               Stock is limited — once it's gone, it's gone.
             </p>
-
+ 
             {/* Countdown */}
             <div className="flex items-center justify-center gap-2 mt-8">
               <Timer size={16} className="text-[#D4AF37] mr-1" />
@@ -112,18 +116,18 @@ export default function OfferPage() {
               <span className="text-[#D4AF37] font-serif text-xl">:</span>
               <CountdownBlock value={seconds} label="SEC" />
             </div>
-
+ 
             <div className="w-16 h-[2px] mx-auto mt-8 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent" />
           </motion.div>
         </div>
-
+ 
         {/* Offer grid */}
         <div className="w-full px-5 py-14">
           <div className="flex items-center justify-center gap-2 mb-8">
             <Tag size={16} className="text-[#D4AF37]" />
             <h2 className="text-[#f3ede0] font-serif text-2xl">Today's Best Deals</h2>
           </div>
-
+ 
           {offerProducts.length === 0 ? (
             <div className="text-center py-16 text-[#9b9488]">
               No active offers right now — check back soon.
@@ -137,7 +141,7 @@ export default function OfferPage() {
           )}
         </div>
       </div>
-
+ 
       <Footer2 />
     </>
   );

@@ -3,21 +3,22 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { ShoppingBag, Minus, Plus, ArrowLeft } from "lucide-react";
 import { useAuth } from "../Context/AuthContext.jsx";
+import { useCurrency } from "../Context/CurrencyContext.jsx";
 import { PRODUCTS } from "./Collection.jsx";
-import { formatPrice } from "../utils/currency.js";
-
+ 
 export default function ProductPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
-
+  const { formatPrice } = useCurrency();
+ 
   const product = PRODUCTS.find((p) => p.id === id);
-
+ 
   const [size, setSize] = useState(null);
   const [qty, setQty] = useState(1);
   const [error, setError] = useState("");
   const [added, setAdded] = useState(false);
-
+ 
   useEffect(() => {
     setSize(null);
     setQty(1);
@@ -25,7 +26,7 @@ export default function ProductPage() {
     setAdded(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [id]);
-
+ 
   if (!product) {
     return (
       <div className="min-h-screen bg-[#0B0B0B] flex items-center justify-center text-[#9b9488]">
@@ -33,7 +34,7 @@ export default function ProductPage() {
       </div>
     );
   }
-
+ 
   // Add to cart:
   // 1) requires sign-in (cart is stored per user id)
   // 2) requires a size to be picked
@@ -51,14 +52,14 @@ export default function ProductPage() {
       setError("Please select a size to continue.");
       return;
     }
-
+ 
     const cartKey = `cart_${user.id}`;
     const existingCart = JSON.parse(localStorage.getItem(cartKey)) || [];
-
+ 
     const matchIndex = existingCart.findIndex(
       (item) => item.id === product.id && item.size === size
     );
-
+ 
     let updatedCart;
     if (matchIndex > -1) {
       updatedCart = [...existingCart];
@@ -80,14 +81,14 @@ export default function ProductPage() {
         },
       ];
     }
-
+ 
     localStorage.setItem(cartKey, JSON.stringify(updatedCart));
     window.dispatchEvent(new Event("cartUpdated"));
-
+ 
     setAdded(true);
     setTimeout(() => navigate("/collection"), 500);
   };
-
+ 
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -102,7 +103,7 @@ export default function ProductPage() {
         >
           <ArrowLeft size={16} /> Back to collection
         </button>
-
+ 
         <div className="grid md:grid-cols-2 gap-11">
           <div
             className="relative rounded-2xl overflow-hidden aspect-[3/4] border border-[#D4AF37]/20"
@@ -117,25 +118,25 @@ export default function ProductPage() {
               </span>
             </div>
           </div>
-
+ 
           <div>
             <span className="text-[#D4AF37] text-xs tracking-wide">{product.brand}</span>
             <h1 className="font-serif text-3xl md:text-4xl text-[#f3ede0] mt-2 mb-3 leading-tight">
               {product.name}
             </h1>
-
+ 
             <div className="flex items-baseline gap-3 mb-1">
               <span className="line-through text-[#9b9488]">
-                {formatPrice(product.mrp, user)}
+                {formatPrice(product.mrp)}
               </span>
               <span className="text-[#D4AF37] font-bold text-xl">
-                {formatPrice(product.price, user)}
+                {formatPrice(product.price)}
               </span>
             </div>
             <p className="text-[#9b9488] text-xs mb-6">
               {product.stock} in stock &middot; shipping calculated at checkout
             </p>
-
+ 
             <div className="mb-6">
               <p className="text-[#f3ede0] text-sm mb-2">Size</p>
               <div className="flex gap-2.5 flex-wrap">
@@ -158,7 +159,7 @@ export default function ProductPage() {
               </div>
               {error && <p className="text-red-500 text-xs mt-2">{error}</p>}
             </div>
-
+ 
             <div className="mb-7">
               <p className="text-[#f3ede0] text-sm mb-2">Quantity</p>
               <div className="inline-flex items-center border border-[#D4AF37]/20 rounded-full overflow-hidden">
@@ -177,7 +178,7 @@ export default function ProductPage() {
                 </button>
               </div>
             </div>
-
+ 
             {/* "Buy it now" removed — Add to cart is the only purchase action */}
             <motion.button
               whileHover={{ y: -2 }}
@@ -188,7 +189,7 @@ export default function ProductPage() {
               <ShoppingBag size={18} />
               {added ? "Added ✓" : "Add to cart"}
             </motion.button>
-
+ 
             {!isAuthenticated && (
               <p className="text-[#9b9488] text-xs mt-3 text-center">
                 You'll need to sign in to add items to your cart.

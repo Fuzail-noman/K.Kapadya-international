@@ -17,7 +17,7 @@ export const PRODUCTS = [
     id: "sana-purple",
     brand: "SANA SAFINAZ",
     name: "Purple Stitched Shirt Piece",
-    price: 899,
+    price: 277.80,
     mrp: 1590,
     stock: 39,
     category: "shalwar-kameez",
@@ -263,4 +263,3 @@ export default function CollectionPage() {
     </>
   );
 }
- 
